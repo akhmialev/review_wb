@@ -1,4 +1,5 @@
 import openpyxl
+import requests
 from fake_useragent import UserAgent
 
 ua = UserAgent()
@@ -18,3 +19,13 @@ def read_xlsx(file_path):
             sku_list.append(cell)
     workbook.close()
     return sku_list
+
+
+def get_json(url):
+    """
+        Функция для запроса по урлу.
+    :param url: урл
+    """
+    response = requests.get(url, headers)
+    data = response.json()
+    return data
