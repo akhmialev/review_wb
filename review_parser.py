@@ -2,7 +2,7 @@ import requests
 from datetime import datetime
 
 from config import file_path
-from tools import read_xlsx, headers
+from tools import read_xlsx, get_json
 
 
 def create_dict_for_get_reviews():
@@ -15,8 +15,7 @@ def create_dict_for_get_reviews():
     for sku in sku_list:
         url = f'https://card.wb.ru/cards/detail?appType=1&curr=rub&dest=-1257786' \
               f'&regions=80,38,83,4,64,33,68,70,30,40,86,75,69,1,31,66,22,110,48,71,114&spp=0&nm={sku}'
-        response = requests.get(url=url, headers=headers)
-        data = response.json()
+        data = get_json(url)
         root = data['data']['products'][0]['root']
         root_dct.update({str(sku): str(root)})
     return root_dct
@@ -31,8 +30,8 @@ def create_list_urls_for_get_reviews():
     for i in range(1, 3):
         for k, v in root_dct.items():
             url = f'https://feedbacks{str(i)}.wb.ru/feedbacks/v1/{v}'
-            response = requests.get(url=url, headers=headers)
-            check_on_json = (response.json()['photosUris'])
+            data = get_json(url)
+            check_on_json = (data['photosUris'])
             if check_on_json:
                 review_list.append(url)
     return review_list
@@ -47,8 +46,7 @@ def get_data():
     today_bad_feedbacks = []
     bad_sku = []
     for url in urls:
-        response = requests.get(url=url, headers=headers)
-        data = response.json()
+        data = get_json(url)
         current_date = datetime.now().date()
 
         for feedback in data['feedbacks']:
@@ -69,10 +67,10 @@ def get_data_for_bot():
     for feedback in feedbacks:
         sku_product = feedback['nmId']
         review_text = ' '.join(feedback['text'].split('\n'))
+
         url = f'https://card.wb.ru/cards/detail?appType=1&curr=rub&dest=-1257786&' \
               f'regions=80,38,83,4,64,33,68,70,30,40,86,75,69,1,31,66,22,110,48,71,114&spp=0&nm={str(sku_product)}'
-        response = requests.get(url=url, headers=headers)
-        data = response.json()
+        data = get_json(url)
         name_of_product = data['data']['products'][0]['name']
         brand = data['data']['products'][0]['brand']
         review_rating = data['data']['products'][0]['reviewRating']
@@ -82,3 +80,4 @@ def get_data_for_bot():
             f'отзыв:{review_text}, оценка:{review_rating} ')
     return string_for_bot
 
+get_data_for_bot()
